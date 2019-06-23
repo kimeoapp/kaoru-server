@@ -10,8 +10,14 @@ const {UserProvider, UserTransaction, Provider, Wallet, RewardLog} = require('..
 
 StellarSdk.Network.useTestNetwork();
 
+/* 
+TODO move to fabric chaincode
+gets called during transaction start and end
+Calculation of far is hardcoded in config file right now, and goes one way only
+*/
 router.post('/', common.uidCheck, common.attachWallet, (req, res, next) => {
   let bd = req.body;
+  console.log('request body ', bd);
   //user id for funder, reciever
   // weight, 
   /* 
@@ -50,6 +56,7 @@ router.post('/', common.uidCheck, common.attachWallet, (req, res, next) => {
       res.status(500);
       return res.end();
     }
+    console.log('########## 1');
 
     const funderWallet = all.funder;
     common.loadRealBalanceForWallet(funderWallet.public, (err, fWalletResult) => {
@@ -59,7 +66,7 @@ router.post('/', common.uidCheck, common.attachWallet, (req, res, next) => {
         res.status(500);
         return res.end();
       }
-      
+      console.log('########## 2');
       const theProvider = all.provider;
 
       if(start != -1) {
@@ -72,7 +79,7 @@ router.post('/', common.uidCheck, common.attachWallet, (req, res, next) => {
           }
         }
         minAmount = stations[stations.length - 1].cost - stAmount;
-        console.log('minAmount ', minAmount);
+        console.log('########## 3');
 
         const fbalance = parseFloat(fWalletResult.balance);
         if(fbalance < minAmount) {
@@ -85,6 +92,7 @@ router.post('/', common.uidCheck, common.attachWallet, (req, res, next) => {
           let uprr = upr.dataValues;
           let upWalletId = uprr.wallet;
           let currentTransactionsCount = uprr.payments_count;
+          console.log('########## 4');
 
           async.parallel( {
             utrans: (callba) => {
@@ -92,23 +100,31 @@ router.post('/', common.uidCheck, common.attachWallet, (req, res, next) => {
                 if(ptrans.length) {
                   let ptransaction = ptrans[0].dataValues;
                   if(ptransaction.status == 'processing') {
+                    console.log('########## 6');
                     return callba(null, ptransaction);
-                  } 
+                  }
+                  console.log('########## 7');
+                  return callba(true, null);
                 } 
+                console.log('########## 8');
                 return callba(true, null);
               }).catch(err => {
+                console.log('########## 9');
                 return callba(err);
               });
             },
-            utwallet: (callba) => {
+            utwallet: (calba) => {
               Wallet.findOne({where: {user: upWalletId}}).then(wone => {
-                return callba(null, wone.dataValues);
+                console.log('########## 10');
+                return calba(null, wone.dataValues);
               }).catch(err => {
-                return callba(err);
+                console.log('########## 11');
+                return calba(err);
               })
             }
           }, (uerr, uresults) => {
             if(uerr) {
+              console.log('########## 12');
               console.log(uerr);
               res.status(500);
               return res.end();
@@ -144,8 +160,13 @@ router.post('/', common.uidCheck, common.attachWallet, (req, res, next) => {
             memoText = 'Payment done';
             const uwallet = uresults.utwallet;
             let mo = minAmount.toFixed(5);
+            console.log('#doing payment');
+            console.log('UWallet ', uwallet);
+            console.log('all.funder ', all.funder);
+            console.log('mo ', mo);
             common.doPayment(uwallet, all.funder, mo, memoText, (perr, presult) => {
               if(perr) {
+                console.log('########## 13');
                 console.log(perr);
                 res.status(500);
                 return res.end();
@@ -153,6 +174,7 @@ router.post('/', common.uidCheck, common.attachWallet, (req, res, next) => {
               console.log('after payment');
               UserTransaction.create({wallet: uwallet.user, by: funder, status: 'done', from: endIndex, amount: mo})
               .then(utcreate => {
+                console.log('########## 14');
                 console.log('transaction happened');
                 currentTransactionsCount++;
                 // update transactions counter
@@ -160,6 +182,7 @@ router.post('/', common.uidCheck, common.attachWallet, (req, res, next) => {
                 RewardLog.create({user: funder, transaction: utcc.id, amount: theProvider.green_per_trip}).then(() => {
                   console.log('reward logged for user');
                 }).catch(err => {
+                  console.log('########## 15');
                   console.log('unable to reward logs');
                   console.log(err);
                 });
@@ -167,6 +190,7 @@ router.post('/', common.uidCheck, common.attachWallet, (req, res, next) => {
                 upr.update({payments_count: currentTransactionsCount}).then(() => {
                   console.log('payments count updated');
                 }).catch(err => {
+                  console.log('########## 16');
                   console.log(err);
                   console.log('unable to update payments count');
                 })
@@ -174,16 +198,16 @@ router.post('/', common.uidCheck, common.attachWallet, (req, res, next) => {
                 return res.jsonp({success: true, data: {amount: costToUser.toFixed(4)}});
               })
               .catch(uterr => {
+                console.log('########## 17');
                 console.log(uterr);
                 res.status(500);
                 return res.end();
               });
             });
-
           });
-
         })
         .catch(err => {
+          console.log('########## 18');
           console.log(err);
           res.status(500);
           return res.end();

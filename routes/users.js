@@ -15,7 +15,8 @@ router.post('/', (req, res, next) => {
   User.create({name: name, info: info}).then(userResults => {
     let urValues = userResults.dataValues;
     const uid = urValues.id;
-    common.generateWallet(uid, '25.0000', 'end', (err, walletResult) => {
+    // we are filthy rich giving away money to everyone
+    common.generateWallet(uid, '50.0000', 'end', (err, walletResult) => {
       if(err) {
         res.status(500);
         return res.end();

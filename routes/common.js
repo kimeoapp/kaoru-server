@@ -141,7 +141,7 @@ const doPayment = (funder, reciever,  amount, memoText, callback) => {
     return callback(null, result);
   })
   .catch(err => {
-    console.log('#---- ', err);
+    console.log('#---- ', err.data);
     // console.log(err);
     return callback(err, null);
   });

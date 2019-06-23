@@ -10,7 +10,18 @@ const Op = require('sequelize').Op;
 const {UserProvider, UserTransaction, Provider, Wallet} = require('../model');
 
 StellarSdk.Network.useTestNetwork();
-
+/*
+TODO fabric chaincode.
+End point is called by admin interface to process settlement
+of service provider account at the end of each billing cycle(monthly)
+Offers given by the service provider based on number of trips 
+the person has taken is applied here.
+Refund/Discount if any is sent to corresponding user
+rest of the amount is settled to the service provider wallet
+@
+Expects uid, service provider user id
+and month for which settlement is to be done.(starts from 1)
+*/
 router.post('/', common.uidCheck, (req, res, next) => {
 
   const uid = req.body.uid;
