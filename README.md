@@ -1,4 +1,4 @@
-#README
+## [#SBHACK19](https://hackathon.trustsquare.ch/)
 
 Application server using nodejs(tested on v08.16), express, stellar-sdk
 
