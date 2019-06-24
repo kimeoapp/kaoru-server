@@ -1,4 +1,4 @@
-## [#SBHACK19](https://hackathon.trustsquare.ch/)
+## [#SBHACK19](https://hackathon.trustsquare.ch/) submission
 
 Application server using nodejs(tested on v08.16), express, stellar-sdk
 
