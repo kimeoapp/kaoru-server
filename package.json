@@ -19,6 +19,6 @@
     "node-fetch": "2.6.0",
     "sequelize": "5.8.10",
     "sqlite3": "4.0.9",
-    "stellar-sdk": "1.0.4"
+    "stellar-sdk": "8.2.3"
   }
 }
